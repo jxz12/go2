@@ -1,6 +1,4 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
+import { useState, useEffect } from 'react'
 import './App.css'
 
 const BOARD_WIDTH = 9;
@@ -8,11 +6,19 @@ const BOARD_START = Array(BOARD_WIDTH).fill(Array(BOARD_WIDTH).fill(0));
 
 function App() {
   const [board, setBoard] = useState([[0,0,0],[0,0,0],[0,0,0]]);
+  const [socket, setSocket] = useState(null);
+
+  useEffect(() => {
+    console.log("connecting");
+    var socket = new WebSocket("ws://localhost:8080/echo");
+    console.log("connected");
+    socket.onmessage = function (e) {
+      console.log(e.data);
+    };
+    setSocket(socket);
+  }, [])
 
   function click(i, j) {
-    // board[i][j] = 1;
-    // setBoard(board.map(row => row.map(cell => cell)));
-
     setBoard(prevBoard => {
       prevBoard[i][j] = 1;
       return prevBoard.map(row => row.map(cell => cell));
@@ -21,6 +27,7 @@ function App() {
 
   return (
     <>
+      <button onClick={() => socket.send("hello")}>socket</button>
       <table>
         <tbody>
           {
