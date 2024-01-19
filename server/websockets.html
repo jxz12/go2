@@ -14,8 +14,15 @@
         output.innerHTML += "Server: " + e.data + "\n";
     };
 
+    socket.onerror = function (e) {
+        output.innerHTML += "Error: " + e + "\n";
+    }
+
     function send() {
+        console.log(input.value);
         socket.send(input.value);
+        // console.log(JSON.stringify(input.value));
+        // socket.send(JSON.stringify(input.value));
         input.value = "";
     }
 </script>
