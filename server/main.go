@@ -31,11 +31,16 @@ func main() {
             msgType, msg, err := conn.ReadMessage()
             if err != nil {
 				fmt.Printf("Error: %s\n", err)
-                return
+                // return
             }
 
             // Print the message to the console
             fmt.Printf("%s sent: %s\n", conn.RemoteAddr(), string(msg))
+
+            // Write message back to browser
+            if err = conn.WriteMessage(msgType, []byte("HELLO")); err != nil {
+                return
+            }
 
             // Write message back to browser
             if err = conn.WriteMessage(msgType, msg); err != nil {
