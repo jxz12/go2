@@ -1,34 +1,34 @@
 package main
 
 import (
-    "fmt"
     "net/http"
+    "encoding/json"
 )
-var upgrader = websocket.Upgrader{
-    ReadBufferSize: 1024,
-    WriteBufferSize: 1024,
-    CheckOrigin: func(r *http.Request) bool { return true },
-}
 
 func main() {
 
-    // TODO?
+    // TODO
     // open a goroutine for each user
     // need a mutex for the board?
+    // matchmaking and new game making
+    playerId := 0
+    board := NewBoard(19)
 
-    http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-        http.ServeFile(w, r, "websockets.html")
-    })
     http.HandleFunc("/new", func(w http.ResponseWriter, r *http.Request) {
         // return index of player
+        w.Header().Set("Content-Type", "application/json")
+        json.NewEncoder(w).Encode(map[string]int{"status": playerId})
+        playerId += 1
     })
     http.HandleFunc("/heartbeat", func(w http.ResponseWriter, r *http.Request) {
         // websockets dont work because of this error, so just use request-response instead
         // "websocket: RSV1 set, bad opcode 7, bad MASK"
-        // should return if game is over
+        // should return state of board, and also if game is over
+        // or maybe just always call play with nothing as heartbeat?
     })
     http.HandleFunc("/play", func(w http.ResponseWriter, r *http.Request) {
         // take x,y location and return true or not
+        // should return state of board
     })
     http.HandleFunc("/finish", func(w http.ResponseWriter, r *http.Request) {
         // take x,y location and return true or not
