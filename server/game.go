@@ -1,4 +1,4 @@
-package go2
+package main
 
 func NewBoard(size int) [][]int {
 	board := make([][]int, size)

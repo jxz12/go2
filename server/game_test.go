@@ -1,4 +1,4 @@
-package go2
+package main
 
 import "testing"
 
