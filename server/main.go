@@ -4,7 +4,6 @@ import "net/http"
 import "encoding/json"
 
 func main() {
-
 	// TODO
 	// open a goroutine for each user
 	// need a mutex for the board?
