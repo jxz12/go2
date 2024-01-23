@@ -1,6 +1,7 @@
 package main
 
 import "testing"
+import "fmt"
 
 func TestPlacement(t *testing.T) {
 	board := NewBoard(5)
@@ -24,4 +25,9 @@ func TestPlacement(t *testing.T) {
 	if scores[1] != 1 || scores[0] != 24 {
 		t.Errorf("score is not 1=1 and 0=24")
 	}
+}
+
+func TestPrint(t *testing.T) {
+	board := NewBoard(5)
+	fmt.Println(PrintBoard(board))
 }
