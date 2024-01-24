@@ -28,7 +28,7 @@ func PrintBoard(board [][]int) string {
 	return buffer.String()
 }
 
-func Place(board [][]int, row int, col int, player int) bool {
+func Place(board [][]int, player int, row int, col int) bool {
 	if board[row][col] != 0 {
 		return false
 	}

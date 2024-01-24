@@ -2,6 +2,7 @@ package main
 
 import "net/http"
 import "encoding/json"
+import "fmt"
 
 func main() {
 	// TODO
@@ -14,7 +15,7 @@ func main() {
 	// websockets dont work because of this error
 	// "websocket: RSV1 set, bad opcode 7, bad MASK"
 	// so just use request-response instead
-	http.HandleFunc("/new", func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc("/player", func(w http.ResponseWriter, r *http.Request) {
 		// return index of player
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(map[string]int{"status": playerId})
@@ -23,13 +24,31 @@ func main() {
 	http.HandleFunc("/board", func(w http.ResponseWriter, r *http.Request) {
 		// should return state of board, and also if game is over
 		// or maybe just always call play with nothing as heartbeat?
-		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(board)
-	})
-	http.HandleFunc("/play", func(w http.ResponseWriter, r *http.Request) {
-		// take x,y location and return true or not
-		// should return true or false and also state of board
-		json.NewEncoder(w).Encode(r.URL.Query().Get("param1"))
+		if r.Method == "GET" {
+			w.Header().Set("Content-Type", "application/json")
+			json.NewEncoder(w).Encode(board)
+		} else if r.Method == "PUT" {
+			type Placement struct {
+				Player int
+				Row int
+				Col int
+			}
+			var p Placement
+			err := json.NewDecoder(r.Body).Decode(&p)
+			if err != nil {
+				fmt.Println(err)
+				w.WriteHeader(400)  // Bad Request
+				return
+			}
+			if Place(board, p.Player, p.Row, p.Col) {
+				w.WriteHeader(200)  // Success
+			} else {
+				fmt.Println("Could not place stone at %s", p)
+				// TODO return reason why e.g. stone already there, Ko, self-capture
+				w.WriteHeader(409)  // Conflict
+			}
+			json.NewEncoder(w).Encode(board)
+		}
 	})
 	http.HandleFunc("/finish", func(w http.ResponseWriter, r *http.Request) {
 		// take x,y location and return true or not
