@@ -2,8 +2,9 @@ package main
 
 import "testing"
 import "fmt"
+import "reflect"
 
-func TestPlacement(t *testing.T) {
+func TestNewBoard(t *testing.T) {
 	board := NewBoard(5)
 
 	if len(board) != 5 {
@@ -27,7 +28,31 @@ func TestPlacement(t *testing.T) {
 	}
 }
 
+func TestPlacement(t *testing.T) {
+	board := [][]int{
+		{1, 1, 2, 0, 0},
+		{1, 3, 0, 0, 0},
+		{1, 0, 0, 0, 0},
+		{2, 0, 0, 0, 0},
+		{0, 0, 0, 0, 0},
+	}
+	Place(board, 3, 4, 0)
+	expected := [][]int{
+		{0, 0, 2, 0, 0},
+		{0, 3, 0, 0, 0},
+		{0, 3, 0, 0, 0},
+		{2, 0, 0, 0, 0},
+		{0, 0, 0, 0, 0},
+	}
+	fmt.Println(ToString(board))
+	if !reflect.DeepEqual(board, expected) {
+		t.Errorf("capture did not remove pieces correctly")
+	}
+}
+
 func TestPrint(t *testing.T) {
 	board := NewBoard(5)
-	fmt.Println(PrintBoard(board))
+	if ToString(board) != "0 0 0 0 0\n0 0 0 0 0\n0 0 0 0 0\n0 0 0 0 0\n0 0 0 0 0" {
+		t.Errorf("empty board not printed correctly")
+	}
 }

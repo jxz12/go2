@@ -26,26 +26,27 @@ func main() {
 		// or maybe just always call play with nothing as heartbeat?
 		if r.Method == "GET" {
 			w.Header().Set("Content-Type", "application/json")
+			// TODO include scores here as well
 			json.NewEncoder(w).Encode(board)
 		} else if r.Method == "PUT" {
 			type Placement struct {
 				Player int
-				Row int
-				Col int
+				Row    int
+				Col    int
 			}
 			var p Placement
 			err := json.NewDecoder(r.Body).Decode(&p)
 			if err != nil {
 				fmt.Println(err)
-				w.WriteHeader(400)  // Bad Request
+				w.WriteHeader(400) // Bad Request
 				return
 			}
 			if Place(board, p.Player, p.Row, p.Col) {
-				w.WriteHeader(200)  // Success
+				w.WriteHeader(200) // Success
 			} else {
-				fmt.Println("Could not place stone at %s", p)
+				fmt.Println("Could not place stone at", p.Player, p.Row, p.Col)
 				// TODO return reason why e.g. stone already there, Ko, self-capture
-				w.WriteHeader(409)  // Conflict
+				w.WriteHeader(409) // Conflict
 			}
 			json.NewEncoder(w).Encode(board)
 		}
