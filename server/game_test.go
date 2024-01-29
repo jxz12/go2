@@ -43,8 +43,29 @@ func TestPlay(t *testing.T) {
 		{2, 0, 0, 0, 0},
 		{0, 0, 0, 0, 0},
 	}
-	if !reflect.DeepEqual(board, expected) {
-		t.Errorf("capture did not remove pieces correctly, got:\n%s\nexpected:\n%s", ToString(board), ToString(expected))
+	AssertBoardsEqual(t, board, expected)
+
+	board = [][]int{
+		{1, 1, 1, 3, 0},
+		{1, 1, 1, 2, 3},
+		{1, 1, 0, 2, 3},
+		{1, 2, 2, 2, 3},
+		{2, 3, 3, 3, 0},
+	}
+	// Play(board, 3, 2, 2)
+	expected = [][]int{
+		{0, 0, 0, 3, 0},
+		{0, 0, 0, 0, 3},
+		{0, 0, 3, 0, 3},
+		{0, 0, 0, 0, 3},
+		{0, 0, 0, 0, 0},
+	}
+	AssertBoardsEqual(t, board, expected)
+}
+
+func AssertBoardsEqual(t *testing.T, observed [][]int, expected [][]int) {
+	if !reflect.DeepEqual(observed, expected) {
+		t.Errorf("capture did not remove pieces correctly, observed:\n%s\nexpected:\n%s", ToString(observed), ToString(expected))
 	}
 }
 

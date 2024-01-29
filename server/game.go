@@ -62,10 +62,18 @@ func Play(board [][]int, player int, row int, col int) bool {
 	left := CanCapture(board, row, col-1)
 	right := CanCapture(board, row, col+1)
 
-	if up { Capture(board, row-1, col) }
-	if down { Capture(board, row-1, col) }
-	if left { Capture(board, row, col-1) }
-	if right { Capture(board, row, col+1) }
+	if up {
+		Capture(board, row-1, col)
+	}
+	if down {
+		Capture(board, row-1, col)
+	}
+	if left {
+		Capture(board, row, col-1)
+	}
+	if right {
+		Capture(board, row, col+1)
+	}
 
 	// Optional Rule 7A: do not allow self captures
 	// because that would be silly and also the game would never end? Would be funny tho
