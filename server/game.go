@@ -109,6 +109,9 @@ func CanCapture(board [][]int, row int, col int) bool {
 
 func Capture(board [][]int, row int, col int) {
 	player := board[row][col]
+	if player == 0 {
+		return
+	}
 
 	var DFS func(row int, col int)
 	DFS = func(row int, col int) {

@@ -52,13 +52,13 @@ func TestPlay(t *testing.T) {
 		{1, 2, 2, 2, 3},
 		{2, 3, 3, 3, 0},
 	}
-	// Play(board, 3, 2, 2)
+	Play(board, 3, 2, 2)
 	expected = [][]int{
 		{0, 0, 0, 3, 0},
 		{0, 0, 0, 0, 3},
 		{0, 0, 3, 0, 3},
 		{0, 0, 0, 0, 3},
-		{0, 0, 0, 0, 0},
+		{2, 3, 3, 3, 0},
 	}
 	AssertBoardsEqual(t, board, expected)
 }
