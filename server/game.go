@@ -2,7 +2,6 @@ package main
 
 import "bytes"
 import "strconv"
-import "fmt"
 
 func NewBoard(size int) [][]int {
 	board := make([][]int, size)
@@ -38,7 +37,7 @@ func Score(board [][]int) map[int]int {
 	}
 	return scores
 }
-func Place(board [][]int, player int, row int, col int) bool {
+func Play(board [][]int, player int, row int, col int) bool {
 	if player == 0 {
 		return false // 0 cannot be a player id
 	}
@@ -52,19 +51,34 @@ func Place(board [][]int, player int, row int, col int) bool {
 	// for each adjacent stone, try doing a BFS on that colour to check if all connecting liberties are gone
 	// remove stones if all gone
 
+	// do two passes of the connected component
+	//   1. determine if no liberties remaing
+	//   2. remove stones if none remaining
+
+	// note that we need to do step 1 for all directions first
+	// since captured stones may still capture other stones
+	up := CanCapture(board, row-1, col)
+	down := CanCapture(board, row+1, col)
+	left := CanCapture(board, row, col-1)
+	right := CanCapture(board, row, col+1)
+
+	if up { Capture(board, row-1, col) }
+	if down { Capture(board, row-1, col) }
+	if left { Capture(board, row, col-1) }
+	if right { Capture(board, row, col+1) }
+
 	// Optional Rule 7A: do not allow self captures
 	// because that would be silly and also the game would never end? Would be funny tho
 	return true
 }
-
-func Capture(board [][]int, row int, col int) bool {
+func CanCapture(board [][]int, row int, col int) bool {
+	if row < 0 || row > len(board)-1 || col < 0 || col > len(board[row])-1 {
+		return false
+	}
 	player := board[row][col]
 
-	// do two passes of the connected component
-	//   1. determine if no liberties remaing
-	//   2. remove stone if none remaining
-	var CanCapture func(row int, col int) bool
-	CanCapture = func(row int, col int) bool {
+	var DFS func(row int, col int) bool
+	DFS = func(row int, col int) bool {
 		if row < 0 || row > len(board)-1 || col < 0 || col > len(board[row])-1 {
 			return true
 		}
@@ -78,10 +92,29 @@ func Capture(board [][]int, row int, col int) bool {
 		}
 		// mark position as explored by setting to minus 1
 		board[row][col] = -player
-		captured = CanCapture(row-1, col) && CanCapture(row+1, col) && CanCapture(row, col-1) && CanCapture(row, col+1)
+		captured := DFS(row-1, col) && DFS(row+1, col) && DFS(row, col-1) && DFS(row, col+1)
 		board[row][col] = player
 		return captured
 	}
-	captured := CanCapture(row, col)
-	return captured
+	return DFS(row, col)
+}
+
+func Capture(board [][]int, row int, col int) {
+	player := board[row][col]
+
+	var DFS func(row int, col int)
+	DFS = func(row int, col int) {
+		if row < 0 || row > len(board)-1 || col < 0 || col > len(board[row])-1 {
+			return
+		}
+		if board[row][col] != player {
+			return
+		}
+		board[row][col] = 0
+		DFS(row-1, col)
+		DFS(row+1, col)
+		DFS(row, col-1)
+		DFS(row, col+1)
+	}
+	DFS(row, col)
 }

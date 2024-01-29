@@ -41,7 +41,7 @@ func main() {
 				w.WriteHeader(400) // Bad Request
 				return
 			}
-			if Place(board, p.Player, p.Row, p.Col) {
+			if Play(board, p.Player, p.Row, p.Col) {
 				w.WriteHeader(200) // Success
 			} else {
 				fmt.Println("Could not place stone at", p.Player, p.Row, p.Col)

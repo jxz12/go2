@@ -1,7 +1,6 @@
 package main
 
 import "testing"
-import "fmt"
 import "reflect"
 
 func TestNewBoard(t *testing.T) {
@@ -14,11 +13,11 @@ func TestNewBoard(t *testing.T) {
 		t.Errorf("board does not have 5 columns")
 	}
 
-	placed := Place(board, 0, 0, 1)
+	placed := Play(board, 1, 0, 0)
 	if placed != true || board[0][0] != 1 {
 		t.Errorf("could not place stone")
 	}
-	placed = Place(board, 0, 0, 1)
+	placed = Play(board, 1, 0, 0)
 	if placed == true {
 		t.Errorf("placed stone in occupied position")
 	}
@@ -28,7 +27,7 @@ func TestNewBoard(t *testing.T) {
 	}
 }
 
-func TestPlacement(t *testing.T) {
+func TestPlay(t *testing.T) {
 	board := [][]int{
 		{1, 1, 2, 0, 0},
 		{1, 3, 0, 0, 0},
@@ -36,7 +35,7 @@ func TestPlacement(t *testing.T) {
 		{2, 0, 0, 0, 0},
 		{0, 0, 0, 0, 0},
 	}
-	Place(board, 3, 4, 0)
+	Play(board, 3, 2, 1)
 	expected := [][]int{
 		{0, 0, 2, 0, 0},
 		{0, 3, 0, 0, 0},
@@ -44,9 +43,8 @@ func TestPlacement(t *testing.T) {
 		{2, 0, 0, 0, 0},
 		{0, 0, 0, 0, 0},
 	}
-	fmt.Println(ToString(board))
 	if !reflect.DeepEqual(board, expected) {
-		t.Errorf("capture did not remove pieces correctly")
+		t.Errorf("capture did not remove pieces correctly, got:\n%s\nexpected:\n%s", ToString(board), ToString(expected))
 	}
 }
 
