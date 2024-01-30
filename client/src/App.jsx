@@ -1,33 +1,28 @@
 import { useState, useEffect } from 'react'
 import './App.css'
 
-const BOARD_WIDTH = 9;
-const BOARD_START = Array(BOARD_WIDTH).fill(Array(BOARD_WIDTH).fill(0));
-
 function App() {
-  const [board, setBoard] = useState([[0, 0, 0], [0, 0, 0], [0, 0, 0]]);
+  const [board, setBoard] = useState([]);
   const [socket, setSocket] = useState(null);
+  const [player, setPlayer] = useState(1)
 
   useEffect(() => {
     console.log("connecting");
-    var socket = new WebSocket("ws://localhost:8080/play");
+    var socket = new WebSocket("ws://localhost:8081/play");
     console.log("connected");
     socket.onmessage = function (e) {
-      console.log(e.data);
+      setBoard(JSON.parse(e.data));
     };
     setSocket(socket);
   }, [])
 
   function click(i, j) {
-    setBoard(prevBoard => {
-      prevBoard[i][j] = 1;
-      return prevBoard.map(row => row.map(cell => cell));
-    });
+    socket.send(JSON.stringify({player: player, row: i, col: j}));
   }
 
   return (
     <>
-      <button onClick={() => socket.send("hello")}>socket</button>
+      <p>player 1 or 2: <input type="checkbox" onChange={() => setPlayer((player % 2) + 1)}/></p>
       <table>
         <tbody>
           {
@@ -37,7 +32,7 @@ function App() {
                   {
                     row.map((cell, j) => {
                       // TODO: use emojis hehe
-                      return <td key={j}><div onClick={() => click(i, j)}>{cell}</div></td>
+                      return <td key={j}><div onClick={() => click(i, j)}>&nbsp;{cell}&nbsp;</div></td>
                     })
                   }
                 </tr>

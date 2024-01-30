@@ -2,8 +2,7 @@ package main
 
 import "fmt"
 import "net/http"
-
-// import "encoding/json"
+import "encoding/json"
 import "github.com/gorilla/websocket"
 
 var upgrader = websocket.Upgrader{
@@ -18,7 +17,7 @@ func main() {
 	// need a mutex for the board?
 	// matchmaking and new game making
 	playerId := 0
-	// board := NewBoard(19)
+	board := NewBoard(19)
 	http.HandleFunc("/play", func(w http.ResponseWriter, r *http.Request) {
 
 		// Upgrade the HTTP connection to a WebSocket connection.
@@ -28,23 +27,33 @@ func main() {
 			return
 		}
 		playerId += 1
+		str, _ := json.Marshal(board)
+		conn.WriteMessage(websocket.TextMessage, str)
+
 		for {
 			messageType, message, err := conn.ReadMessage()
 			if err != nil {
 				fmt.Println(messageType, message, err)
 				return
 			}
-			fmt.Println("Received:", message)
+			type Placement struct {
+				Player int
+				Row    int
+				Col    int
+			}
+			var p Placement
+			err = json.Unmarshal(message, &p)
+			if err != nil {
+				fmt.Println(err)
+			}
+			board.Play(p.Player, p.Row, p.Col)
 
-			// json.NewEncoder(w).Encode(map[string]int{"status": playerId})
-			// type Placement struct {
-			// 	Player int
-			// 	Row    int
-			// 	Col    int
-			// }
-			// var p Placement
-			// err := json.NewDecoder(r.Body).Decode(&p)
+			str, _ := json.Marshal(board)
+			err = conn.WriteMessage(websocket.TextMessage, str)
 		}
 	})
-	http.ListenAndServe(":8080", nil)
+
+	// port 8080 does not work on Mac, possibly due to parental controls
+	// https://discussions.apple.com/thread/253069437
+	http.ListenAndServe(":8081", nil)
 }
