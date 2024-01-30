@@ -10,7 +10,7 @@ function App() {
 
   useEffect(() => {
     console.log("connecting");
-    var socket = new WebSocket("ws://localhost:8080/echo");
+    var socket = new WebSocket("ws://localhost:8080/play");
     console.log("connected");
     socket.onmessage = function (e) {
       console.log(e.data);
