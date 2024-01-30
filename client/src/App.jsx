@@ -5,7 +5,7 @@ const BOARD_WIDTH = 9;
 const BOARD_START = Array(BOARD_WIDTH).fill(Array(BOARD_WIDTH).fill(0));
 
 function App() {
-  const [board, setBoard] = useState([[0,0,0],[0,0,0],[0,0,0]]);
+  const [board, setBoard] = useState([[0, 0, 0], [0, 0, 0], [0, 0, 0]]);
   const [socket, setSocket] = useState(null);
 
   useEffect(() => {
@@ -36,6 +36,7 @@ function App() {
                 <tr key={i}>
                   {
                     row.map((cell, j) => {
+                      // TODO: use emojis hehe
                       return <td key={j}><div onClick={() => click(i, j)}>{cell}</div></td>
                     })
                   }

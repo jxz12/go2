@@ -3,16 +3,16 @@ package main
 import "bytes"
 import "strconv"
 
-// type Board interface {
-// 	Width() int
-// 	Get(int, int) int
-// 	ToString() string
-// 	Score() map[int]int
-// 	Play(int, int, int) bool
-// }
+type IBoard interface {
+	Width() int
+	Get(int, int) int
+	ToString() string
+	Score() map[int]int
+	Play(int, int, int) bool
+}
 type Board [][]int
 
-func NewBoard(size int) Board {
+func NewBoard(size int) IBoard {
 	board := make(Board, size)
 	for i := 0; i < size; i++ {
 		board[i] = make([]int, size)
@@ -128,6 +128,7 @@ func (board Board) CanCapture(row int, col int) bool {
 func (board Board) Capture(row int, col int) {
 	player := board[row][col]
 	if player == 0 {
+		// prevents infinite recursion when another Capture removes the piece that was here
 		return
 	}
 
