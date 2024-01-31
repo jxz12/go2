@@ -59,32 +59,27 @@ func (board Board) Play(player int, row int, col int) bool {
 	if player == 0 {
 		return false // 0 cannot be a player id
 	}
-	// Rule 7 in https://en.wikipedia.org/wiki/Rules_of_Go
+	// Rule 7 (https://en.wikipedia.org/wiki/Rules_of_Go#Moving)
 	// Step 1: position must be empty
 	if board[row][col] != 0 {
 		return false
 	}
 	board[row][col] = player
+
 	// Step 2: look for groups of stones with liberties gone
-	// for each adjacent stone, try doing a BFS on that colour to check if all connecting liberties are gone
-	// remove stones if all gone
-
-	// do two passes of the connected component
-	//   1. determine if no liberties remaing
-	//   2. remove stones if none remaining
-
-	// note that we need to do step 1 for all directions first
-	// since captured stones may still capture other stones
-	up := board.CanCapture(row-1, col)
-	down := board.CanCapture(row+1, col)
-	left := board.CanCapture(row, col-1)
-	right := board.CanCapture(row, col+1)
+	//   requires two passes since to-be-captured stones may still capture other stones
+	//   1. determine if connected components have no liberties
+	//   2. remove all stones in components with no liverties
+	up := board.CanCapture(player, row-1, col)
+	down := board.CanCapture(player, row+1, col)
+	left := board.CanCapture(player, row, col-1)
+	right := board.CanCapture(player, row, col+1)
 
 	if up {
 		board.Capture(row-1, col)
 	}
 	if down {
-		board.Capture(row-1, col)
+		board.Capture(row+1, col)
 	}
 	if left {
 		board.Capture(row, col-1)
@@ -93,15 +88,28 @@ func (board Board) Play(player int, row int, col int) bool {
 		board.Capture(row, col+1)
 	}
 
-	// Optional Rule 7A: do not allow self captures
-	// because that would be silly and also the game would never end? Would be funny tho
+	// Step 3: would be to remove own coloured stones, but we do not allow this due to
+	// Optional Rule 7A (https://en.wikipedia.org/wiki/Rules_of_Go#Self-capture)
+	if !(up || down || left || right) {
+		if board.CanCapture(0, row, col) {
+			board[row][col] = 0
+			return false
+		}
+	}
+	// Rule 8 (https://en.wikipedia.org/wiki/Rules_of_Go#Ko)
+	//   is to prevent never-ending games, but we don't have to worry about it
+	//   because the asynchronous nature means other better moves are available
+	//   it is also more elegant to not have to remember previous board states
 	return true
 }
-func (board Board) CanCapture(row int, col int) bool {
+func (board Board) CanCapture(capturer int, row int, col int) bool {
 	if row < 0 || row > len(board)-1 || col < 0 || col > len(board[row])-1 {
 		return false
 	}
-	player := board[row][col]
+	if board[row][col] == capturer {
+		return false
+	}
+	captured := board[row][col]
 
 	var DFS func(int, int) bool
 	DFS = func(row int, col int) bool {
@@ -112,15 +120,15 @@ func (board Board) CanCapture(row int, col int) bool {
 			// empty square means liberty is available
 			return false
 		}
-		if board[row][col] != player {
+		if board[row][col] != captured {
 			// liberty taken by another colour stone
 			return true
 		}
-		// mark position as explored by setting to minus 1
-		board[row][col] = -player
-		captured := DFS(row-1, col) && DFS(row+1, col) && DFS(row, col-1) && DFS(row, col+1)
-		board[row][col] = player
-		return captured
+		// mark position as explored by setting to negative number
+		board[row][col] = -board[row][col]
+		capturable := DFS(row-1, col) && DFS(row+1, col) && DFS(row, col-1) && DFS(row, col+1)
+		board[row][col] = -board[row][col]
+		return capturable
 	}
 	return DFS(row, col)
 }

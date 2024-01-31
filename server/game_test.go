@@ -24,7 +24,7 @@ func TestNewBoard(t *testing.T) {
 	}
 }
 
-func TestPlay(t *testing.T) {
+func TestCapture(t *testing.T) {
 	board := Board{
 		{1, 1, 2, 0, 0},
 		{1, 3, 0, 0, 0},
@@ -58,6 +58,36 @@ func TestPlay(t *testing.T) {
 		{2, 3, 3, 3, 0},
 	}
 	AssertBoardsEqual(t, board, expected)
+
+	board = Board{
+		{0, 1, 2, 0, 0},
+		{1, 2, 0, 0, 0},
+		{2, 0, 0, 0, 0},
+		{0, 0, 0, 0, 0},
+		{0, 0, 0, 0, 0},
+	}
+	board.Play(2, 0, 0)
+	expected = Board{
+		{2, 0, 2, 0, 0},
+		{0, 2, 0, 0, 0},
+		{2, 0, 0, 0, 0},
+		{0, 0, 0, 0, 0},
+		{0, 0, 0, 0, 0},
+	}
+	AssertBoardsEqual(t, board, expected)
+}
+
+func TestNoSelfCapture(t *testing.T) {
+	board := Board{
+		{1, 1, 1, 2, 0},
+		{1, 0, 1, 2, 0},
+		{1, 1, 2, 0, 0},
+		{2, 2, 0, 0, 0},
+		{0, 0, 0, 0, 0},
+	}
+	if board.Play(1, 1, 1) {
+		t.Errorf("should not be able to play move due to self-capture\n%s", board.ToString())
+	}
 }
 
 func AssertBoardsEqual(t *testing.T, observed Board, expected Board) {
