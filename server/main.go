@@ -1,9 +1,12 @@
 package main
 
-import "fmt"
-import "net/http"
-import "encoding/json"
-import "github.com/gorilla/websocket"
+import (
+	"encoding/json"
+	"fmt"
+	"net/http"
+
+	"github.com/gorilla/websocket"
+)
 
 var upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
@@ -12,13 +15,12 @@ var upgrader = websocket.Upgrader{
 }
 
 func main() {
-	// TODO
-	// open a goroutine for each user
-	// need a mutex for the board?
 	// matchmaking and new game making
 	playerId := 0
 	board := NewBoard(19)
 	http.HandleFunc("/play", func(w http.ResponseWriter, r *http.Request) {
+
+		// this is already a goroutine that has been spawned per player
 
 		// Upgrade the HTTP connection to a WebSocket connection.
 		conn, err := upgrader.Upgrade(w, r, nil)
@@ -46,6 +48,9 @@ func main() {
 			if err != nil {
 				fmt.Println(err)
 			}
+			// TODO maybe do this?
+			// channel <- p
+
 			board.Play(p.Player, p.Row, p.Col)
 
 			str, _ := json.Marshal(board)

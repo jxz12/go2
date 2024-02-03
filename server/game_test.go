@@ -1,7 +1,10 @@
 package main
 
-import "testing"
-import "reflect"
+import (
+	"fmt"
+	"reflect"
+	"testing"
+)
 
 func TestNewBoard(t *testing.T) {
 	board := NewBoard(5)
@@ -88,6 +91,33 @@ func TestNoSelfCapture(t *testing.T) {
 	if board.Play(1, 1, 1) {
 		t.Errorf("should not be able to play move due to self-capture\n%s", board.ToString())
 	}
+}
+
+func TestWalrus(t *testing.T) {
+	// err := "error"
+	// fmt.Println(err)
+	// if err := "error2"; err == "error2" {
+	// 	fmt.Println(err)
+	// }
+	var x int
+	x = 5
+	px := &x
+	fmt.Println(px)
+	ppx := &px
+	fmt.Println(ppx)
+	fmt.Println(**ppx)
+}
+
+func TestBigArray(t *testing.T) {
+	var bigArray [10000]int
+	WriteBigArray(bigArray)
+	var i int
+	i = 1
+	i = -(-(-(-(-(-(-(-(-(-(-(-(-(-(-i))))))))))))))
+	t.Errorf("%v", bigArray[0])
+}
+func WriteBigArray(bigArray [10000]int) {
+	bigArray[0] = 1
 }
 
 func AssertBoardsEqual(t *testing.T, observed Board, expected Board) {

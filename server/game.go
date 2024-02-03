@@ -69,7 +69,7 @@ func (board Board) Play(player int, row int, col int) bool {
 	// Step 2: look for groups of stones with liberties gone
 	//   requires two passes since to-be-captured stones may still capture other stones
 	//   1. determine if connected components have no liberties
-	//   2. remove all stones in components with no liverties
+	//   2. remove all stones in components with no liberties
 	up := board.CanCapture(player, row-1, col)
 	down := board.CanCapture(player, row+1, col)
 	left := board.CanCapture(player, row, col-1)
