@@ -1,42 +1,124 @@
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+h1 {
+  padding-bottom: 0.5rem;
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+.heading-go-one {
+  font-size: 4rem;
+  background: linear-gradient(
+    180deg,
+    hsl(0, 0%, 95%) 0%,
+    hsl(0, 0%, 95%) 48%,
+    #4ca9d4 50%,
+    hsl(0, 0%, 10%) 52%,
+    hsl(0, 0%, 0%) 100%
+  );
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: gradientMovement 8s infinite ease-in-out;
 }
 
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
+.heading-in {
+  padding: 0 1rem;
+  font-size: 1.5rem;
+  color: hsl(0, 0%, 65%);
+}
+
+.heading-go-two {
+  font-size: 4rem;
+  color: #4ca9d4;
+}
+
+form {
+  display: flex;
+  justify-content: center;
+  align-items: start;
+  gap: 2rem;
+  padding-bottom: 1rem;
+}
+
+input[type="checkbox"] {
+  cursor: pointer;
+}
+
+input[type="checkbox"]:checked {
+  accent-color: #4ca9d4;
+}
+
+.board {
+  padding: 1rem;
+  background-image: url("/images/board-background.webp");
+  filter: saturate(0.9);
+  box-shadow: 0 0 1rem 0.5rem hsl(0, 0%, 10%);
+}
+
+.row {
+  display: flex;
+}
+
+.cell {
+  position: relative;
+  width: 2rem;
+  height: 2rem;
+  cursor: pointer;
+  font-size: 0.6rem;
+  display: grid;
+  place-items: center;
+}
+
+.cell-horizontal-line,
+.cell-vertical-line {
+  position: absolute;
+  background-color: hsl(0, 0%, 50%);
+  z-index: -1;
+}
+
+.cell-horizontal-line {
+  height: 1px;
+}
+
+.cell-vertical-line {
+  width: 1px;
+}
+
+.cell.empty {
+  /* comment out to see 0's */
+  color: transparent;
+}
+
+.cell.player-one,
+.cell.player-two {
+  border-radius: 50%;
+}
+
+.cell.player-one {
+  background: radial-gradient(
+    circle at 20% 20%,
+    hsl(0, 0%, 95%) 35%,
+    hsl(0, 0%, 20%)
+  );
+  border: 1px solid hsl(0, 0%, 60%);
+  color: hsl(0, 0%, 40%);
+}
+
+.cell.player-two {
+  background: radial-gradient(
+    circle at 10% 10%,
+    hsl(0, 0%, 40%),
+    hsl(0, 0%, 0%)
+  );
+  border: 1px solid hsl(0, 0%, 15%);
+  color: hsl(0, 0%, 85%);
+}
+
+@keyframes gradientMovement {
+  0% {
+    background-size: 100% 100%;
   }
-  to {
-    transform: rotate(360deg);
+  50% {
+    background-size: 100% 200%;
   }
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
+  100% {
+    background-size: 100% 100%;
   }
-}
-
-.card {
-  padding: 2em;
-}
-
-.read-the-docs {
-  color: #888;
 }
