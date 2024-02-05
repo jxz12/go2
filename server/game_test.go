@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"reflect"
 	"testing"
 )
@@ -21,9 +20,11 @@ func TestNewBoard(t *testing.T) {
 	if placed == true {
 		t.Errorf("placed stone in occupied position")
 	}
-	scores := board.Score()
-	if scores[1] != 1 || scores[0] != 24 {
-		t.Errorf("score is not 1=1 and 0=24")
+}
+
+func AssertBoardsEqual(t *testing.T, observed Board, expected Board) {
+	if !reflect.DeepEqual(observed, expected) {
+		t.Errorf("capture did not remove pieces correctly, observed:\n%s\nexpected:\n%s", observed.ToString(), expected.ToString())
 	}
 }
 
@@ -93,42 +94,45 @@ func TestNoSelfCapture(t *testing.T) {
 	}
 }
 
-func TestWalrus(t *testing.T) {
-	// err := "error"
-	// fmt.Println(err)
-	// if err := "error2"; err == "error2" {
-	// 	fmt.Println(err)
-	// }
-	var x int
-	x = 5
-	px := &x
-	fmt.Println(px)
-	ppx := &px
-	fmt.Println(ppx)
-	fmt.Println(**ppx)
-}
-
-func TestBigArray(t *testing.T) {
-	var bigArray [10000]int
-	WriteBigArray(bigArray)
-	var i int
-	i = 1
-	i = -(-(-(-(-(-(-(-(-(-(-(-(-(-(-i))))))))))))))
-	t.Errorf("%v", bigArray[0])
-}
-func WriteBigArray(bigArray [10000]int) {
-	bigArray[0] = 1
-}
-
-func AssertBoardsEqual(t *testing.T, observed Board, expected Board) {
-	if !reflect.DeepEqual(observed, expected) {
-		t.Errorf("capture did not remove pieces correctly, observed:\n%s\nexpected:\n%s", observed.ToString(), expected.ToString())
-	}
-}
-
 func TestPrint(t *testing.T) {
 	board := NewBoard(5)
 	if board.ToString() != "0 0 0 0 0\n0 0 0 0 0\n0 0 0 0 0\n0 0 0 0 0\n0 0 0 0 0" {
 		t.Errorf("empty board not printed correctly")
+	}
+}
+
+func TestScore(t *testing.T) {
+	board := Board{
+		{0, 0, 0, 0, 0},
+		{0, 0, 0, 0, 0},
+		{0, 0, 0, 0, 0},
+		{0, 0, 0, 0, 0},
+		{0, 0, 0, 0, 0},
+	}
+	scores := board.Score()
+	if len(scores) != 0 {
+		t.Errorf("score is not empty: %v", scores)
+	}
+	board = Board{
+		{0, 0, 0, 0, 0},
+		{0, 0, 0, 0, 0},
+		{0, 0, 1, 0, 0},
+		{0, 0, 0, 0, 0},
+		{0, 0, 0, 0, 0},
+	}
+	scores = board.Score()
+	if len(scores) != 1 || scores[1] != 25 {
+		t.Errorf("board is not owned by 1: %v", scores)
+	}
+	board = Board{
+		{0, 0, 1, 0, 0},
+		{0, 0, 1, 0, 0},
+		{1, 1, 1, 0, 0},
+		{0, 0, 0, 2, 0},
+		{0, 0, 0, 0, 0},
+	}
+	scores = board.Score()
+	if len(scores) != 2 || scores[1] != 9 || scores[2] != 1 {
+		t.Errorf("score is not correct: %v", scores)
 	}
 }

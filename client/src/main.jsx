@@ -7,5 +7,5 @@ ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <App />
   </React.StrictMode>,
-  // this StrictMode is like cleanup 
+  // this StrictMode is like a cleanup for hot reloading
 )
