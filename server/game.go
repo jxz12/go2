@@ -61,21 +61,31 @@ func (board Board) Score() map[int]int {
 	//   then can just sum the number of stones and pseudo-captures for each player
 	//   note that this means a single stone on the board means it owns the entire board hahaha
 
+	neutral := -board.Width() * board.Width()
+
 	for row := 0; row < len(board); row++ {
 		for col := 0; col < len(board[row]); col++ {
 			if board[row][col] > 0 {
 				capturer := board[row][col]
 				if board.CanCapture(capturer, row-1, col, false) {
 					board.Capture(-capturer, row-1, col)
+				} else {
+					board.MarkNeutral(neutral, row-1, col)
 				}
 				if board.CanCapture(capturer, row+1, col, false) {
 					board.Capture(-capturer, row+1, col)
+				} else {
+					board.MarkNeutral(neutral, row+1, col)
 				}
 				if board.CanCapture(capturer, row, col-1, false) {
 					board.Capture(-capturer, row, col-1)
+				} else {
+					board.MarkNeutral(neutral, row, col-1)
 				}
 				if board.CanCapture(capturer, row, col+1, false) {
 					board.Capture(-capturer, row, col+1)
+				} else {
+					board.MarkNeutral(neutral, row, col+1)
 				}
 			}
 		}
@@ -87,9 +97,11 @@ func (board Board) Score() map[int]int {
 	scores := make(map[int]int)
 	for row := 0; row < len(board); row++ {
 		for col := 0; col < len(board[row]); col++ {
-			if board[row][col] < 0 {
-				scores[-board[row][col]] += 1
+			if board[row][col] == neutral {
+				board[row][col] = 0
+			} else if board[row][col] < 0 {
 				board[row][col] = -board[row][col]
+				scores[board[row][col]] += 1
 			} else if board[row][col] > 0 {
 				scores[board[row][col]] += 1
 			}
@@ -154,6 +166,15 @@ func (board Board) CanCapture(capturer int, row int, col int, prisonersNotTerrit
 		return false
 	}
 	captured := board[row][col]
+	if prisonersNotTerritory {
+		if captured == 0 {
+			return false
+		}
+	} else {
+		if captured != 0 {
+			return false
+		}
+	}
 
 	var DFS func(int, int) bool
 	DFS = func(row int, col int) bool {
@@ -186,6 +207,17 @@ func (board Board) CanCapture(capturer int, row int, col int, prisonersNotTerrit
 		return capturable
 	}
 	return DFS(row, col)
+}
+
+func (board Board) MarkNeutral(marker int, row int, col int) {
+	if row < 0 || row > len(board)-1 || col < 0 || col > len(board[row])-1 {
+		return
+	}
+	if board[row][col] != 0 {
+		// we should only mark neutral if it has not been (pseudo-)captured by anyone
+		return
+	}
+	board.Capture(marker, row, col)
 }
 
 func (board Board) Capture(replacement int, row int, col int) {
