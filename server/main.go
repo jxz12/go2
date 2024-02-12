@@ -15,9 +15,7 @@ var upgrader = websocket.Upgrader{
 }
 
 func main() {
-	// matchmaking and new game making
-	playerId := 0
-	board := NewBoard(19)
+	hub := NewHub(19)
 	http.HandleFunc("/play", func(w http.ResponseWriter, r *http.Request) {
 
 		// this is already a goroutine that has been spawned per player
@@ -28,8 +26,7 @@ func main() {
 			fmt.Println(err)
 			return
 		}
-		playerId += 1
-		str, _ := json.Marshal(board)
+		str, _ := json.Marshal(hub.board)
 		conn.WriteMessage(websocket.TextMessage, str)
 
 		for {
@@ -38,22 +35,15 @@ func main() {
 				fmt.Println(messageType, message, err)
 				return
 			}
-			type Placement struct {
-				Player int
-				Row    int
-				Col    int
-			}
-			var p Placement
-			err = json.Unmarshal(message, &p)
+			var move Move
+			err = json.Unmarshal(message, &move)
 			if err != nil {
 				fmt.Println(err)
 			}
-			// TODO maybe do this?
-			// channel <- p
 
-			board.Play(p.Player, p.Row, p.Col)
+			hub.board.Play(move.Player, move.Row, move.Col)
 
-			str, _ := json.Marshal(board)
+			str, _ := json.Marshal(hub.board)
 			err = conn.WriteMessage(websocket.TextMessage, str)
 		}
 	})
