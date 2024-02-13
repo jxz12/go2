@@ -1,6 +1,11 @@
 package main
 
-import "github.com/gorilla/websocket"
+import (
+	"encoding/json"
+	"fmt"
+
+	"github.com/gorilla/websocket"
+)
 
 type IBoard interface {
 	// Andrea says "tl;dr move the interface to the place where you use it"
@@ -20,46 +25,90 @@ type Move struct {
 type Hub struct {
 	board   IBoard
 	players map[*Player]bool
-	pubs    chan []Move
-	subs    chan *Player
-	unsubs  chan *Player
+	sub     chan Move
 }
 
 type Player struct {
-	hub  *Hub
 	conn *websocket.Conn
-	pubs chan []byte
+	hub  *Hub
+	pub  chan []byte
 }
 
-func NewHub(size int) *Hub {
+func NewHub(boardSize int) *Hub {
 	return &Hub{
 		board:   NewBoard(19),
 		players: make(map[*Player]bool),
-		pubs:    make(chan []Move),
-		subs:    make(chan *Player),
-		unsubs:  make(chan *Player),
+		sub:     make(chan Move),
+	}
+}
+func (hub *Hub) NewPlayer(conn *websocket.Conn) *Player {
+	player := &Player{
+		conn: conn,
+		hub:  hub,
+		pub:  make(chan []byte),
+	}
+	hub.players[player] = true
+	str, _ := json.Marshal(hub.board)
+	player.pub <- str
+	return player
+}
+
+func (player *Player) Sub() {
+	defer func() {
+		if _, ok := player.hub.players[player]; ok {
+			delete(player.hub.players, player)
+			// close(player.pub)
+		}
+		// TODO: not sure if I actually need to clean up since Golang has GC
+		// player.conn.Close()
+	}()
+	for {
+		msgType, message, err := player.conn.ReadMessage()
+		if err != nil {
+			fmt.Println(msgType, message, err)
+			// if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
+			// 	log.Printf("error: %v", err)
+			// }
+			break
+		}
+		var move Move
+		err = json.Unmarshal(message, &move)
+		if err != nil {
+			fmt.Println(err)
+			// TODO: return error to client
+		}
+		player.hub.sub <- move
+	}
+}
+func (player *Player) Pub() {
+	defer func() {
+		if _, ok := player.hub.players[player]; ok {
+			delete(player.hub.players, player)
+		}
+		// TODO: not sure if I actually need to clean up since Golang has GC
+		// player.conn.Close()
+	}()
+	for {
+		message := <-player.pub
+		err := player.conn.WriteMessage(websocket.TextMessage, message)
+		if err != nil {
+			return
+		}
 	}
 }
 
-// func (h *Hub) run() {
-// 	for {
-// 		select {
-// 		case client := <-h.register:
-// 			h.clients[client] = true
-// 		case client := <-h.unregister:
-// 			if _, ok := h.clients[client]; ok {
-// 				delete(h.clients, client)
-// 				close(client.send)
-// 			}
-// 		case message := <-h.broadcast:
-// 			for client := range h.clients {
-// 				select {
-// 				case client.send <- message:
-// 				default:
-// 					close(client.send)
-// 					delete(h.clients, client)
-// 				}
-// 			}
-// 		}
-// 	}
-// }
+func (hub *Hub) Fanout() {
+	for {
+		move := <-hub.sub
+		hub.board.Play(move.Player, move.Row, move.Col)
+		str, _ := json.Marshal(hub.board)
+		for player := range hub.players {
+			select {
+			case player.pub <- str:
+			default:
+				// close(player.pub)
+				delete(hub.players, player)
+			}
+		}
+	}
+}
