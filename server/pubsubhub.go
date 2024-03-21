@@ -7,6 +7,9 @@ import (
 	"github.com/gorilla/websocket"
 )
 
+const SUB_BUF = 8
+const PUB_BUF = 64
+
 type IBoard interface {
 	// Andrea says "tl;dr move the interface to the place where you use it"
 	Width() int
@@ -24,28 +27,32 @@ type Move struct {
 
 type Hub struct {
 	board   IBoard
-	players map[*Player]bool
 	sub     chan Move
+	players map[*Player]bool
+	// TODO: maybe this is cleaner instead of reference to players?
+	// pubs map[chan<- Move]bool
 }
 
 type Player struct {
 	conn *websocket.Conn
-	hub  *Hub
 	pub  chan []byte
+	hub  *Hub
+	// TODO: maybe this is cleaner instead of reference to hub?
+	// sub <-chan Move
 }
 
 func NewHub(boardSize int) *Hub {
 	return &Hub{
 		board:   NewBoard(19),
 		players: make(map[*Player]bool),
-		sub:     make(chan Move),
+		sub:     make(chan Move, SUB_BUF),
 	}
 }
 func (hub *Hub) NewPlayer(conn *websocket.Conn) *Player {
 	player := &Player{
 		conn: conn,
 		hub:  hub,
-		pub:  make(chan []byte),
+		pub:  make(chan []byte, PUB_BUF),
 	}
 	hub.players[player] = true
 	str, _ := json.Marshal(hub.board)
@@ -54,14 +61,14 @@ func (hub *Hub) NewPlayer(conn *websocket.Conn) *Player {
 }
 
 func (player *Player) Sub() {
-	defer func() {
-		if _, ok := player.hub.players[player]; ok {
-			delete(player.hub.players, player)
-			// close(player.pub)
-		}
-		// TODO: not sure if I actually need to clean up since Golang has GC
-		// player.conn.Close()
-	}()
+	// TODO: not sure if I actually need to clean up since Golang has GC
+	// defer func() {
+	// 	if _, ok := player.hub.players[player]; ok {
+	// 		delete(player.hub.players, player)
+	// 		close(player.pub)
+	// 	}
+	// 	player.conn.Close()
+	// }()
 	for {
 		msgType, message, err := player.conn.ReadMessage()
 		if err != nil {
@@ -81,13 +88,13 @@ func (player *Player) Sub() {
 	}
 }
 func (player *Player) Pub() {
-	defer func() {
-		if _, ok := player.hub.players[player]; ok {
-			delete(player.hub.players, player)
-		}
-		// TODO: not sure if I actually need to clean up since Golang has GC
-		// player.conn.Close()
-	}()
+	// defer func() {
+	// 	if _, ok := player.hub.players[player]; ok {
+	// 		delete(player.hub.players, player)
+	// 	}
+	// 	// TODO: not sure if I actually need to clean up since Golang has GC
+	// 	// player.conn.Close()
+	// }()
 	for {
 		message := <-player.pub
 		err := player.conn.WriteMessage(websocket.TextMessage, message)
