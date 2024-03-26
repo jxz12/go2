@@ -1,11 +1,12 @@
-export function cellClass(cell) {
-  switch (cell) {
-    case 0:
-      return "cell empty";
-    case 1:
-      return "cell player-one";
-    case 2:
-      return "cell player-two";
+export function cellClass(playerId) {
+  // TODO: choose from multiple colours not just black and white
+  //       currently use modulo 4 logic because of useEffect running twice
+  if (playerId === 0) {
+    return "cell empty";
+  } else if (playerId % 4 === 0) {
+    return "cell player-one";
+  } else {
+    return "cell player-two";
   }
 }
 

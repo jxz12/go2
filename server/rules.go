@@ -5,18 +5,9 @@ import (
 	"strconv"
 )
 
-type IBoard interface {
-	// Andrea and Derek say that this interface should not be here
-	// tl;dr move the interface to the place where you use it
-	Width() int
-	Get(int, int) int
-	ToString() string
-	Score() map[int]int
-	Play(int, int, int) bool
-}
 type Board [][]int
 
-func NewBoard(size int) IBoard {
+func NewBoard(size int) Board {
 	board := make(Board, size)
 	for i := 0; i < size; i++ {
 		board[i] = make([]int, size)
