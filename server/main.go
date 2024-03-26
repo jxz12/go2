@@ -15,19 +15,16 @@ var upgrader = websocket.Upgrader{
 
 func main() {
 	hub := NewHub(19)
-	go hub.Fanout()
 
+	playerId := 0
 	http.HandleFunc("/play", func(w http.ResponseWriter, r *http.Request) {
 		conn, err := upgrader.Upgrade(w, r, nil)
 		if err != nil {
 			fmt.Println(err)
 			return
 		}
-		// TODO: communicate to decide playerId, colour etc.
-
-		player := hub.NewPlayer(conn)
-		go player.Sub()
-		go player.Pub()
+		playerId += 1
+		hub.NewPlayer(conn, playerId)
 	})
 
 	// port 8080 does not work on Mac, possibly due to parental controls

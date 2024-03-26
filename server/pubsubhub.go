@@ -7,8 +7,8 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-const SUB_BUF = 8
-const PUB_BUF = 64
+// subscribe to the client
+// publish to the client
 
 type IBoard interface {
 	// Andrea says "tl;dr move the interface to the place where you use it"
@@ -29,32 +29,39 @@ type Hub struct {
 	board   IBoard
 	sub     chan Move
 	players map[*Player]bool
-	// TODO: maybe this is cleaner instead of reference to players?
-	// pubs map[chan<- Move]bool
 }
 
 type Player struct {
+	id   int
 	conn *websocket.Conn
 	pub  chan []byte
 	hub  *Hub
-	// TODO: maybe this is cleaner instead of reference to hub?
-	// sub <-chan Move
 }
 
 func NewHub(boardSize int) *Hub {
-	return &Hub{
-		board:   NewBoard(19),
+	hub := &Hub{
+		board:   NewBoard(boardSize),
 		players: make(map[*Player]bool),
-		sub:     make(chan Move, SUB_BUF),
+		sub:     make(chan Move),
 	}
+	go hub.Fanout()
+	return hub
 }
-func (hub *Hub) NewPlayer(conn *websocket.Conn) *Player {
+func (hub *Hub) NewPlayer(conn *websocket.Conn, id int) *Player {
 	player := &Player{
+		id:   id,
 		conn: conn,
 		hub:  hub,
-		pub:  make(chan []byte, PUB_BUF),
+		pub:  make(chan []byte),
 	}
 	hub.players[player] = true
+
+	go player.Sub()
+	go player.Pub()
+
+	// TODO: this reference to hub.board may require a mutex
+	//       this is probably why the gorilla chat example has channels for register and unregister
+	//       https://github.com/gorilla/websocket/blob/main/examples/chat/hub.go
 	str, _ := json.Marshal(hub.board)
 	player.pub <- str
 	return player
@@ -80,6 +87,10 @@ func (player *Player) Sub() {
 		}
 		var move Move
 		err = json.Unmarshal(message, &move)
+
+		// the client should not need to be aware of its own id
+		move.Player = player.id
+
 		if err != nil {
 			fmt.Println(err)
 			// TODO: return error to client
