@@ -23,7 +23,7 @@ func (board Board) Get(row int, col int) int {
 	return board[row][col]
 }
 
-func (board Board) ToString() string {
+func (board Board) String() string {
 	buffer := bytes.NewBufferString("")
 
 	for row := 0; row < len(board); row++ {

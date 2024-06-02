@@ -19,3 +19,9 @@ go run go2
 * the UI only chooses between two colours and does not highlight the current user's stones
 * there is not reconnect logic (how can we maintain the playerId? Maybe via ip address?)
   * the current logic is actually leaky because players who disconnect do not close their goroutines
+
+* store an expiration time on the server
+  * player can hit a button which is "I'm still here"
+  * real expiration time is 10 seconds, but only display final 5
+  * every state of the board has an expiration time, not just the board state
+  * how to handle when someone has left the game?

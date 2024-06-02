@@ -1,31 +1,25 @@
 package main
 
 import (
-	"reflect"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestNewBoard(t *testing.T) {
 	board := NewBoard(5)
 
-	if board.Width() != 5 {
-		t.Errorf("board does not have 5 rows")
-	}
+	require.Equal(t, 5, board.Width(), "board does not have 5 rows")
 
 	placed := board.Play(1, 0, 0)
-	if placed != true || board.Get(0, 0) != 1 {
-		t.Errorf("could not place stone")
-	}
+	assert.True(t, placed == true && board.Get(0, 0) == 1, "could not place stone")
 	placed = board.Play(1, 0, 0)
-	if placed == true {
-		t.Errorf("placed stone in occupied position")
-	}
+	assert.False(t, placed, "placed stone in occupied position")
 }
 
 func AssertBoardsEqual(t *testing.T, observed Board, expected Board) {
-	if !reflect.DeepEqual(observed, expected) {
-		t.Errorf("capture did not remove pieces correctly, observed:\n%s\nexpected:\n%s", observed.ToString(), expected.ToString())
-	}
+	assert.Equal(t, expected, observed, "capture did not remove pieces correctly")
 }
 
 func TestCapture(t *testing.T) {
@@ -89,16 +83,12 @@ func TestNoSelfCapture(t *testing.T) {
 		{2, 2, 0, 0, 0},
 		{0, 0, 0, 0, 0},
 	}
-	if board.Play(1, 1, 1) {
-		t.Errorf("should not be able to play move due to self-capture\n%s", board.ToString())
-	}
+	assert.Falsef(t, board.Play(1, 1, 1), "should not be able to play move due to self-capture\n%s", board)
 }
 
 func TestPrint(t *testing.T) {
 	board := NewBoard(5)
-	if board.ToString() != "0 0 0 0 0\n0 0 0 0 0\n0 0 0 0 0\n0 0 0 0 0\n0 0 0 0 0" {
-		t.Errorf("empty board not printed correctly")
-	}
+	assert.Equal(t, board.String(), "0 0 0 0 0\n0 0 0 0 0\n0 0 0 0 0\n0 0 0 0 0\n0 0 0 0 0", "empty board not printed correctly")
 }
 
 func TestScore(t *testing.T) {
@@ -110,9 +100,7 @@ func TestScore(t *testing.T) {
 		{0, 0, 0, 0, 0},
 	}
 	scores := board.Score()
-	if len(scores) != 0 {
-		t.Errorf("score is not empty: %v", scores)
-	}
+	assert.Equalf(t, len(scores), 0, "score is not empty: %v", scores)
 	board = Board{
 		{0, 0, 0, 0, 0},
 		{0, 0, 0, 0, 0},
@@ -121,9 +109,7 @@ func TestScore(t *testing.T) {
 		{0, 0, 0, 0, 0},
 	}
 	scores = board.Score()
-	if len(scores) != 1 || scores[1] != 25 {
-		t.Errorf("board is not owned by 1: %v", scores)
-	}
+	assert.Truef(t, len(scores) == 1 && scores[1] == 25, "board is not owned by 1: %v", scores)
 	board = Board{
 		{0, 0, 1, 0, 0},
 		{0, 0, 1, 0, 0},
@@ -132,7 +118,5 @@ func TestScore(t *testing.T) {
 		{0, 0, 0, 0, 0},
 	}
 	scores = board.Score()
-	if len(scores) != 2 || scores[1] != 9 || scores[2] != 1 {
-		t.Errorf("score is not correct: %v", scores)
-	}
+	assert.Truef(t, len(scores) == 2 && scores[1] == 9 && scores[2] == 1, "score is not correct: %v", scores)
 }

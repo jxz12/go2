@@ -14,7 +14,6 @@ type IBoard interface {
 	// Andrea says "tl;dr move the interface to the place where you use it"
 	Width() int
 	Get(int, int) int
-	ToString() string
 	Score() map[int]int
 	Play(int, int, int) bool
 }
@@ -26,9 +25,10 @@ type Move struct {
 }
 
 type Hub struct {
-	board   IBoard
+	board IBoard
+	// TODO: should have a GetBoard function with a mutex
 	sub     chan Move
-	players map[*Player]bool
+	players map[*Player]struct{}
 }
 
 type Player struct {
@@ -41,9 +41,11 @@ type Player struct {
 func NewHub(boardSize int) *Hub {
 	hub := &Hub{
 		board:   NewBoard(boardSize),
-		players: make(map[*Player]bool),
+		players: make(map[*Player]struct{}),
 		sub:     make(chan Move),
 	}
+	// the preferred way is not to have any `go` inside the constructor function
+	// you shouldn't mix constructing and function calls in one, partly because it's easier to test
 	go hub.Fanout()
 	return hub
 }
@@ -54,7 +56,7 @@ func (hub *Hub) NewPlayer(conn *websocket.Conn, id int) *Player {
 		hub:  hub,
 		pub:  make(chan []byte),
 	}
-	hub.players[player] = true
+	hub.players[player] = struct{}{}
 
 	go player.Sub()
 	go player.Pub()
@@ -69,6 +71,9 @@ func (hub *Hub) NewPlayer(conn *websocket.Conn, id int) *Player {
 
 func (player *Player) Sub() {
 	// TODO: not sure if I actually need to clean up since Golang has GC
+	// TODO: the answer is yes, otherwise the map will grow forever
+	//       but you do not need to close the channel, although it is nice to include for readability
+	//       also it's good to close the websocket for safety
 	// defer func() {
 	// 	if _, ok := player.hub.players[player]; ok {
 	// 		delete(player.hub.players, player)
@@ -125,6 +130,8 @@ func (hub *Hub) Fanout() {
 			case player.pub <- str:
 			default:
 				// close(player.pub)
+				// may need mutex for deleting this
+				// also is it weird to delete what is being iterated in the iteration
 				delete(hub.players, player)
 			}
 		}
